@@ -1,0 +1,70 @@
+---
+title: "Task"
+author: "Nikita Krähenbühl"
+date: "5/13/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(readr)        
+library(dplyr)        
+library(ggplot2)      
+library(lubridate)
+library(ggpubr)
+```
+# Task 1
+Going to skip this as I am familiar with functions.
+
+# Task 3: Joining data
+Round the minutes of DatetimeUTC  
+```{r pressure, echo=FALSE}
+ws <- read_csv("rawdata/wildschwein_BE_2056.csv")
+ws %>% 
+  mutate(dt_rounded = round_date(DatetimeUTC, unit = "15 minutes")) -> ws 
+
+ws %>% group_by(TierName) %>% summarise(n =)
+  
+```
+
+# Task 4: 
+Split Rosa and Sabi
+```{r}
+library(tidyverse)
+ws %>% 
+  group_split(TierName) %>% 
+  reduce(left_join, by = "dt_rounded") %>% 
+  mutate(distance = -> ws_joined #this method splits all - not what we want
+         
+ws %>% filter(TierName == "Sabi") -> ws_sabi
+ws %>% filter(TierName == "Rosa") -> ws_rosa
+
+inner_join(ws_sabi, ws_rosa, by = "dt_rounded", suffix = c("_sabi", "_rosa")) %>% 
+      mutate(distance = sqrt((E_sabi - E_rosa)^2 + (N_sabi - N_rosa)^2),
+           meet = distance < 100) -> ws_join
+
+
+```
+
+# Task 5: Visualise
+```{r}
+ggplot() +
+  geom_point(data = ws_sabi, aes(x = E, y = N, color = TierName),  alpha = 0.1, size = 0.5) +
+  geom_point(data = ws_rosa, aes(x = E, y = N, color = TierName), alpha = 0.1, size = 0.5) +
+  geom_point(data = ws_join %>%  filter(meet == TRUE),
+             aes(x=E_sabi, y=N_sabi, fill = TierName_sabi), pch = 21, color = "black") +
+  geom_point(data = ws_join %>%  filter(meet == TRUE),
+             aes(x=E_rosa, y=N_rosa, fill = TierName_rosa), pch = 21, color = "black") +
+  theme_void()
+
+```
+
+# Task 6: Plotly
+
+Will complete another time
+```{r}
+library(plotly)
+
+
+```
+
